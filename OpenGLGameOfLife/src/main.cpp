@@ -7,8 +7,12 @@
 
 #include <random>
 
-constexpr uint32_t WIDTH = 800;
-constexpr uint32_t HEIGHT = 600;
+constexpr uint32_t WIDTH = 800 / 4;
+constexpr uint32_t HEIGHT = 600 / 4;
+
+std::random_device rd;
+std::mt19937 gen(rd());
+std::uniform_int_distribution<int> dist(0, 255);
 
 std::vector<Pixel> pixels;
 
@@ -17,12 +21,22 @@ int pixelValue(const Pixel& pixel)
     return int(pixel.r + pixel.g + pixel.b);
 }
 
+void applyPixelFunction()
+{
+    for (auto& pixel : pixels)
+    {
+        pixel.r = (dist(gen));
+        pixel.g = (dist(gen));
+        pixel.b = (dist(gen));
+    }
+}
+
 int main()
 {
     pixels.resize(WIDTH * HEIGHT);
     
 
-	if (!Window::Init(WIDTH, HEIGHT, "GameOfLife"))
+	if (!Window::Init(800, 600, "GameOfLife"))
 	{
 		return -1;
 	}
@@ -35,23 +49,18 @@ int main()
     VertexMesh mesh;
 
     Shader shader;
-    Texture texture(WIDTH / 8, HEIGHT / 8, pixels);
+    Texture texture(WIDTH, HEIGHT, pixels);
 
 	Renderer::Init();
+    applyPixelFunction();
 
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<int> dist(0, 255);
+    size_t sortIndex = 0;
+    size_t pass = 0;
+    bool passSwapped = false;
 
 	// Loop to maintain window
 	while (!Window::WindowShouldClose())
 	{
-        for (auto& pixel : pixels)
-        {
-            pixel.r = (dist(gen));
-            pixel.g = (dist(gen));
-            pixel.b = (dist(gen));
-        }
 
         bool swapped = false;
 
@@ -80,6 +89,9 @@ int main()
 
             Window::SwapBuffers();
             Window::PollEvents();
+
+            if (Window::WindowShouldClose())
+                break;
 
             // If no two elements were swapped by inner loop, break
             if (!swapped) {
