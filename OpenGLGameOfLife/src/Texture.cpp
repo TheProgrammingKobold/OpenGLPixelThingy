@@ -22,10 +22,39 @@ Texture::Texture(int width, int height, const std::vector<Pixel>& pixel_data)
 		GL_UNSIGNED_BYTE,// Data type
 		pixel_data.data() // Pointer to your vector's data
 	);
+
+	glGenBuffers(1, &m_pboID);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pboID);
+	glBufferData(GL_PIXEL_UNPACK_BUFFER, width * height * sizeof(Pixel), nullptr, GL_STREAM_DRAW);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
+	setTextureData(pixel_data);
+
+}
+
+Texture::~Texture()
+{
+	if (m_textureID)
+	{
+		glDeleteTextures(1, &m_textureID);
+	}
+	if (m_pboID)
+	{
+		glDeleteBuffers(1, &m_pboID);
+	}
 }
 
 void Texture::setTextureData(const std::vector<Pixel>& pixel_data)
 {
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pboID);
+
+	Pixel* ptr = (Pixel*)glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
+	if (ptr)
+	{
+		std::memcpy(ptr, pixel_data.data(), pixel_data.size() * sizeof(Pixel));
+		glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+	}
+
 	glBindTexture(GL_TEXTURE_2D, m_textureID);
 	glTexSubImage2D(
 		GL_TEXTURE_2D,
@@ -34,8 +63,10 @@ void Texture::setTextureData(const std::vector<Pixel>& pixel_data)
 		_width, _height,            // Width, height of the region
 		GL_RGB,         // Pixel format
 		GL_UNSIGNED_BYTE,// Data type
-		pixel_data.data() // Pointer to your vector's data
+		nullptr // Pointer to your vector's data
 	);
+
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 }
 
 void Texture::bind()

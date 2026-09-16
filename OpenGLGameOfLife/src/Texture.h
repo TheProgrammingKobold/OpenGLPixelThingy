@@ -13,6 +13,7 @@ class Texture
 {
 public:
 	Texture(int width, int height, const std::vector<Pixel>& pixel_data);
+	~Texture();
 
 	void setTextureData(const std::vector<Pixel>& pixel_data);
 
@@ -25,6 +26,7 @@ private:
 	int _width, _height;
 
 	GLuint m_textureID;
+	GLuint m_pboID;
 
 };
 

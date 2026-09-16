@@ -370,6 +370,7 @@ int main()
                 Window::SwapBuffers();
                 Window::PollEvents();
             }, sortByColor);
+        applyPixelFunction();
 	}
 
 	Renderer::Shutdown();
