@@ -283,8 +283,8 @@ void bubblesort(std::vector<Pixel>& pixels, std::function<void()> renderFunc, st
     }
 }
 
-constexpr uint32_t TEXTURE_WIDTH = 800 / 8;
-constexpr uint32_t TEXTURE_HEIGHT = 600 / 8;
+constexpr uint32_t TEXTURE_WIDTH = 800 / 2;
+constexpr uint32_t TEXTURE_HEIGHT = 600 / 2;
 
 std::random_device rd;
 std::mt19937 gen(rd());
@@ -355,7 +355,7 @@ int main()
 	
 	while (!Window::WindowShouldClose())
 	{
-        bubblesort(pixels, [&]()
+        selectionSort(pixels, [&]()
             {
                 Renderer::Render();
 
