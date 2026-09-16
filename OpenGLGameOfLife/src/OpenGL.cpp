@@ -13,6 +13,8 @@ namespace OpenGL
 			std::println("ERROR: Failed to init glad!");
 			return false;
 		}
+
+
 		return true;
 	}
 

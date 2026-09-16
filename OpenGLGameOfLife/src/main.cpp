@@ -23,9 +23,9 @@ struct RGB
 
     void convertPixelToRGB(const Pixel& pixel)
     {
-        r = pixel.r / 255.0f;
-        g = pixel.g / 255.0f;
-        b = pixel.b / 255.0f;
+        r = pixel.r / 255.0;
+        g = pixel.g / 255.0;
+        b = pixel.b / 255.0;
     }
 };
 
@@ -283,8 +283,8 @@ void bubblesort(std::vector<Pixel>& pixels, std::function<void()> renderFunc, st
     }
 }
 
-constexpr uint32_t TEXTURE_WIDTH = 800 / 2;
-constexpr uint32_t TEXTURE_HEIGHT = 600 / 2;
+constexpr uint32_t TEXTURE_WIDTH = 800 / 4;
+constexpr uint32_t TEXTURE_HEIGHT = 600 / 4;
 
 std::random_device rd;
 std::mt19937 gen(rd());
@@ -331,18 +331,18 @@ void applyPixelFunction()
 
 int main()
 {
-    pixels.resize(TEXTURE_WIDTH * TEXTURE_HEIGHT);
-    
+    pixels.resize(TEXTURE_WIDTH * TEXTURE_HEIGHT); 
 
 	if (!Window::Init(800, 600, "Sorting Shinanigans"))
 	{
 		return -1;
 	}
 
-	if (!OpenGL::Init())
-	{
-		return -1;
-	}
+    if (!OpenGL::Init())
+    {
+        return -1;
+    }
+
 
     VertexMesh mesh;
 
