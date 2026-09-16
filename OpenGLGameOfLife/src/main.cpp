@@ -6,20 +6,70 @@
 #include "VertexMesh.h"
 
 #include <random>
+#include <functional>
+#include <algorithm>
 
-constexpr uint32_t WIDTH = 800 / 4;
-constexpr uint32_t HEIGHT = 600 / 4;
+
+int sortByMostColor(const Pixel& pixel)
+{
+    if (pixel.r >= pixel.g && pixel.r >= pixel.b)
+    {
+        return 1;
+    }
+    else if (pixel.g >= pixel.r && pixel.g >= pixel.b)
+    {
+        return 2;
+    }
+    else if (pixel.b >= pixel.r && pixel.b >= pixel.g)
+    {
+        return 3;
+    }
+    return 4;
+}
+
+int sortByColorComb(const Pixel& pixel)
+{
+    return int(pixel.r + pixel.b + pixel.g);
+}
+
+void bubblesort(std::vector<Pixel>& pixels, std::function<void()> renderFunc, std::function<int(const Pixel&)> pixelFunc)
+{
+    bool swapped = false;
+
+
+    for (int i = 0; i < pixels.size() - 1; i++) {
+        swapped = false;
+
+
+        for (int j = 0; j < pixels.size() - i - 1; j++) {
+            if (pixelFunc(pixels[j]) > pixelFunc(pixels[j + 1])) {
+                std::swap(pixels[j], pixels[j + 1]);
+                swapped = true;
+            }
+        }
+
+        if (renderFunc)
+        {
+            renderFunc();
+        }
+
+        if (Window::WindowShouldClose())
+            break;
+
+        if (!swapped) {
+            break;
+        }
+    }
+}
+
+constexpr uint32_t TEXTURE_WIDTH = 800 / 8;
+constexpr uint32_t TEXTURE_HEIGHT = 600 / 8;
 
 std::random_device rd;
 std::mt19937 gen(rd());
 std::uniform_int_distribution<int> dist(0, 255);
 
 std::vector<Pixel> pixels;
-
-int pixelValue(const Pixel& pixel)
-{
-    return int(pixel.r + pixel.g + pixel.b);
-}
 
 void applyPixelFunction()
 {
@@ -31,12 +81,13 @@ void applyPixelFunction()
     }
 }
 
+
 int main()
 {
-    pixels.resize(WIDTH * HEIGHT);
+    pixels.resize(TEXTURE_WIDTH * TEXTURE_HEIGHT);
     
 
-	if (!Window::Init(800, 600, "GameOfLife"))
+	if (!Window::Init(800, 600, "Sorting Shinanigans"))
 	{
 		return -1;
 	}
@@ -49,7 +100,7 @@ int main()
     VertexMesh mesh;
 
     Shader shader;
-    Texture texture(WIDTH, HEIGHT, pixels);
+    Texture texture(TEXTURE_WIDTH, TEXTURE_HEIGHT, pixels);
 
 	Renderer::Init();
     applyPixelFunction();
@@ -58,48 +109,24 @@ int main()
     size_t pass = 0;
     bool passSwapped = false;
 
-	// Loop to maintain window
+	
 	while (!Window::WindowShouldClose())
 	{
+        bubblesort(pixels, [&]() 
+            {
+                Renderer::Render();
 
-        bool swapped = false;
+                texture.bind();
+                shader.use();
 
-        // Outer loop runs up to n-1 times
-        for (int i = 0; i < pixels.size() - 1; i++) {
-            swapped = false;
+                texture.setTextureData(pixels);
 
-            // Inner loop compares adjacent elements
-            // The last i elements are already sorted, so we skip them
-            for (int j = 0; j < pixels.size() - i - 1; j++) {
-                if (pixelValue(pixels[j]) > pixelValue(pixels[j + 1])) {
-                    std::swap(pixels[j], pixels[j + 1]);
-                    swapped = true; // Mark that a swap occurred
-                }
-            }
+                mesh.bind();
+                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-            Renderer::Render();
-
-            texture.bind();
-            shader.use();
-
-            texture.setTextureData(pixels);
-
-            mesh.bind();
-            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-            Window::SwapBuffers();
-            Window::PollEvents();
-
-            if (Window::WindowShouldClose())
-                break;
-
-            // If no two elements were swapped by inner loop, break
-            if (!swapped) {
-                break;
-            }
-        }
-
-
+                Window::SwapBuffers();
+                Window::PollEvents();
+            }, sortByMostColor);
 	}
 
 	Renderer::Shutdown();
