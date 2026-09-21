@@ -1,6 +1,8 @@
 #include "Texture.h"
 #include "VertexMesh.h"
 
+#include <print>
+
 Texture::Texture(int width, int height, const std::vector<Pixel>& pixel_data)
 {
 	_width = width;
@@ -53,6 +55,10 @@ void Texture::setTextureData(const std::vector<Pixel>& pixel_data)
 	{
 		std::memcpy(ptr, pixel_data.data(), pixel_data.size() * sizeof(Pixel));
 		glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+	}
+	else
+	{
+		std::println("Your pointer invalid for the texture cuh...");
 	}
 
 	glBindTexture(GL_TEXTURE_2D, m_textureID);

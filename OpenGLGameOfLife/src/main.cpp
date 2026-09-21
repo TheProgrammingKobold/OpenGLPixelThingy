@@ -1,14 +1,6 @@
-#include "Window.h"
-#include "Renderer.h"
-#include "OpenGL.h"
-#include "Texture.h"
-#include "Shader.h"
-#include "VertexMesh.h"
+#include "PixelSandbox.h"
 
-#include <random>
-#include <functional>
-#include <algorithm>
-#include <cmath>
+
 
 struct HSV
 {
@@ -328,9 +320,11 @@ void applyPixelFunction()
     }
 }
 
-
 int main()
 {
+    using Clock = std::chrono::high_resolution_clock;
+
+
     pixels.resize(TEXTURE_WIDTH * TEXTURE_HEIGHT); 
 
 	if (!Window::Init(800, 600, "Sorting Shinanigans"))
@@ -350,8 +344,9 @@ int main()
     Texture texture(TEXTURE_WIDTH, TEXTURE_HEIGHT, pixels);
 
 	Renderer::Init();
+    auto start = Clock::now();
     applyPixelFunction();
-
+    auto afterSort = Clock::now();
 	
 	while (!Window::WindowShouldClose())
 	{
@@ -363,12 +358,29 @@ int main()
                 shader.use();
 
                 texture.setTextureData(pixels);
+                auto afterUpload = Clock::now();
 
                 mesh.bind();
                 glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+                auto afterRender = Clock::now();
 
                 Window::SwapBuffers();
                 Window::PollEvents();
+
+                auto sortTime =
+                    std::chrono::duration<double, std::milli>(afterSort - start).count();
+
+                auto uploadTime =
+                    std::chrono::duration<double, std::milli>(afterUpload - afterSort).count();
+
+                auto renderTime =
+                    std::chrono::duration<double, std::milli>(afterRender - afterUpload).count();
+
+                std::cout
+                    << "Sort: " << sortTime << " ms | "
+                    << "Upload: " << uploadTime << " ms | "
+                    << "Render: " << renderTime << " ms\n";
+
             }, sortByColor);
         applyPixelFunction();
 	}
